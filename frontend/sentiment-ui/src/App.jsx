@@ -13,7 +13,7 @@ import {
 
 import "./index.css";
 
-const API_URL = "http://127.0.0.1:8000"; // change to Render when deploying
+const API_URL = "https://analise-de-sentimento-automatica-asa.onrender.com"; // change to Render when deploying
 
 const COLORS = ["#22c55e", "#9ca3af", "#ef4444"];
 
