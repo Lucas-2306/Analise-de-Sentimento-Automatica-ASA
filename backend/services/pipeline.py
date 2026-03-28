@@ -5,9 +5,6 @@ predictor = None
 
 
 def get_predictor():
-    """
-    Lazy-load the sentiment model once.
-    """
 
     global predictor
 
@@ -32,6 +29,7 @@ def run_analysis(query: str, pages: int = 1):
             "positive": 0,
             "neutral": 0,
             "negative": 0,
+            "overall_score": 0,
             "results": []
         }
 
@@ -42,7 +40,7 @@ def run_analysis(query: str, pages: int = 1):
     for p, d in zip(predictions, dates):
         p["date"] = d
 
-    counts, timeline = aggregate_results(predictions)
+    counts, timeline, overall_score = aggregate_results(predictions)
 
     return {
         "query": query,
@@ -50,6 +48,7 @@ def run_analysis(query: str, pages: int = 1):
         "positive": counts["positive"],
         "neutral": counts["neutral"],
         "negative": counts["negative"],
+        "overall_score": overall_score,   # 🔥 NEW
         "timeline": timeline,
         "results": predictions
     }
