@@ -1,32 +1,77 @@
-from transformers import pipeline
+import os
+import requests
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 class SentimentPredictor:
 
     def __init__(self):
 
-        self.model_name = "cardiffnlp/twitter-roberta-base-sentiment-latest"
+        self.api_url = "https://router.huggingface.co/hf-inference/models/cardiffnlp/twitter-roberta-base-sentiment-latest"
 
-        self.classifier = pipeline(
-            "sentiment-analysis",
-            model=self.model_name,
-            tokenizer=self.model_name,
-            truncation=True,
-            batch_size=32
-        )
+        self.headers = {
+            "Authorization": f"Bearer {os.getenv('HF_API_KEY')}",
+            "Content-Type": "application/json"
+        }
 
     def predict(self, texts):
 
-        results = self.classifier(texts)
-
         formatted = []
 
-        for text, res in zip(texts, results):
+        for text in texts:
 
-            formatted.append({
-                "text": text,
-                "sentiment": res["label"],
-                "score": float(res["score"])
-            })
+            response = requests.post(
+                self.api_url,
+                headers=self.headers,
+                json={
+                    "inputs": text,
+                    "options": {"wait_for_model": True}
+                }
+            )
+
+            if response.status_code != 200:
+                print("HF ERROR:", response.status_code, response.text)
+                formatted.append({
+                    "text": text,
+                    "sentiment": "neutral",
+                    "score": 0.0
+                })
+                continue
+
+            try:
+                result = response.json()
+            except Exception:
+                print("RAW RESPONSE:", response.text)
+                formatted.append({
+                    "text": text,
+                    "sentiment": "neutral",
+                    "score": 0.0
+                })
+                continue
+
+            try:
+                # Handle both formats
+                if isinstance(result[0], list):
+                    scores = result[0]
+                else:
+                    scores = result
+
+                best = max(scores, key=lambda x: x["score"])
+
+                formatted.append({
+                    "text": text,
+                    "sentiment": best["label"].lower(),
+                    "score": float(best["score"])
+                })
+
+            except Exception:
+                print("PARSE ERROR:", result)
+                formatted.append({
+                    "text": text,
+                    "sentiment": "neutral",
+                    "score": 0.0
+                })
 
         return formatted

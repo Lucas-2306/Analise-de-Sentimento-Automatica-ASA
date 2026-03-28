@@ -1,12 +1,6 @@
 requests
 python-dotenv
-scikit-learn
 joblib
-pandas
-numpy
-transformers
-torch
-numpy
 fastapi
 uvicorn
 pydantic

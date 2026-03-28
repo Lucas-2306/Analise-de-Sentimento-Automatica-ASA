@@ -21,7 +21,8 @@ def aggregate_results(results):
         sentiment = r["sentiment"].lower()
         date = r["date"][:10]  # YYYY-MM-DD
 
-        counts[sentiment] += 1
+        if sentiment in counts:
+            counts[sentiment] += 1
         timeline[date][sentiment] += 1
 
     timeline_list = []
